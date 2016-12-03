@@ -118,18 +118,19 @@ a:hover {
     fill: none;
     stroke: #000;
     stroke-width: 2px;
-    pointer-events: all;
 }
 .cadline {
     fill: none;
     stroke: #aaa;
     stroke-width: 1px;
 }
-#map {
+.location {
+    fill : red;
+    fill-opacity: 1;
+    stroke : white;
+    stroke-width: 2pt;
 }
-.mouse {
-    pointer-events: none;
-    font-size: 12px;
+#map {
 }
 .label {
     font-family: Helvetica, Geneva, Verdana, sans-serif;
