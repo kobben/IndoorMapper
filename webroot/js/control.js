@@ -21,9 +21,10 @@ var floordata, scale, y_offset, x_offset, mapDiv, mapSVG;
 //         "geometry": {"type": "Point", "coordinates": [50000, 40000]},
 //         "properties": {"timestamp": new Date()}
 //     }
-var curLoc;
+var curLoc = [0,0];
 var locationLayer;
 var v; // for the refresh cycle
+var webSockConn;
 
 // AffineTransformation as a basic pseudo-projection of CAD coords to screen coords
 // http://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations
@@ -57,6 +58,29 @@ function AffineTransformation(a, b, c, d, tx, ty) {
 
 
 function init() {
+
+// *** WEBSOCKET STUFF ****
+// ************************
+    webSockConn = new WebSocket('ws://localhost:8080/locate');
+
+// When the webSockConn is open, send some data to the server
+    webSockConn.onopen = function () {
+        console.log("Opened webSockConn " + webSockConn.url);
+    };
+
+// Log errors
+    webSockConn.onerror = function (error) {
+        console.log('webSockConn Error: ' + error);
+    };
+
+// Log messages from the server
+    webSockConn.onmessage = function (e) {
+        console.log('Server: ' + e.data);
+    };
+
+// ************************
+
+
     mapDiv = d3.select("body");
     // d3.json("./data/floor0.topojson", function(json) {
     //     floordata=topojson.feature(json, json.objects.floor0).features;
@@ -65,7 +89,6 @@ function init() {
     d3.json("./data/floor1.json", function (json) {
         floordata = json.features;
         fitToBox(floordata);
-    	showLocation();
     });
 
 
@@ -110,6 +133,13 @@ function fitToBox(pathData) {
         .attr("class", "cadline")
         .attr("d", projectedPath)
     ;
+    locationLayer = mapSVG.append("circle")
+        .attr("id", "curLoc")
+        .attr("class", "location")
+        .attr("r", 10)
+        .attr("cx", AffineTrans(curLoc)[0] )
+        .attr("cy", AffineTrans(curLoc)[1] )
+    ;
 }
 
 
@@ -129,38 +159,53 @@ function ReverseAffineTrans(xy) {
     return [x, y];
 }
 
+
 function doLocate(d) {
     var cX = d3.event.pageX - 8; //TODO:  -8 to account for strange shift in click X??
     var cY = d3.event.pageY;
     var XY = ReverseAffineTrans([cX, cY]);
-    curLoc.properties.timestamp = new Date();
-    curLoc.geometry.coordinates = XY;
-    var theCircle = d3.selectAll(".location")
-    	.attr("cx", AffineTrans(curLoc.geometry.coordinates)[0])
-        .attr("cy", AffineTrans(curLoc.geometry.coordinates)[1])
+    curLoc = XY;
+    d3.selectAll(".location")
+            .attr("cx", AffineTrans(curLoc)[0] )
+            .attr("cy", AffineTrans(curLoc)[1] )
         ;
-    console.log(curLoc.geometry.coordinates);
-    window.location = "updateLoc.py?x="
-        + (curLoc.geometry.coordinates)[0] + "&y="
-        + (curLoc.geometry.coordinates)[1]+ "&t="
-        + curLoc.properties.timestamp 
-        ;
+    console.log('storeLocation:' + curLoc[0] + ',' + curLoc[1]);
+    webSockConn.send('storeLocation:' + curLoc[0] + ',' + curLoc[1]); // Send the message to the server
 }
 
-function showLocation() {
-    if (locationLayer != null) {
-        locationLayer.remove();
-    }
-    v++; //to force reloading of json
-    var URL = "./data/curLoc.json?v=" + v;
-    d3.json(URL, function (json) {
-        curLoc = json;
-        locationLayer = mapSVG.append("circle")
-            .attr("id", "curLoc")
-            .attr("class", "location")
-            .attr("r", 10)
-            .attr("cx", AffineTrans(curLoc.geometry.coordinates)[0])
-            .attr("cy", AffineTrans(curLoc.geometry.coordinates)[1])
-        ;
-    });
-}
+
+// function doLocate(d) {
+//     var cX = d3.event.pageX - 8; //TODO:  -8 to account for strange shift in click X??
+//     var cY = d3.event.pageY;
+//     var XY = ReverseAffineTrans([cX, cY]);
+//     curLoc.properties.timestamp = new Date();
+//     curLoc.geometry.coordinates = XY;
+//     var theCircle = d3.selectAll(".location")
+//             .attr("cx", AffineTrans(curLoc.geometry.coordinates)[0])
+//             .attr("cy", AffineTrans(curLoc.geometry.coordinates)[1])
+//         ;
+//     console.log(curLoc.geometry.coordinates + curLoc.properties.timestamp);
+//     window.location = "updateLoc.py?x="
+//         + (curLoc.geometry.coordinates)[0] + "&y="
+//         + (curLoc.geometry.coordinates)[1]+ "&t="
+//         + curLoc.properties.timestamp
+//     ;
+// }
+
+// function showLocation() {
+//     if (locationLayer != null) {
+//         locationLayer.remove();
+//     }
+//     var v = Math.random(); //to force reloading of json
+//     var URL = "curLoc.json?v=" + v;
+//     d3.json(URL, function (json) {
+//         curLoc = json;
+//         locationLayer = mapSVG.append("circle")
+//             .attr("id", "curLoc")
+//             .attr("class", "location")
+//             .attr("r", 10)
+//             .attr("cx", AffineTrans(curLoc.geometry.coordinates)[0])
+//             .attr("cy", AffineTrans(curLoc.geometry.coordinates)[1])
+//         ;
+//     });
+// }
