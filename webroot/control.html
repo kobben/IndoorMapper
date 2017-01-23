@@ -1,22 +1,28 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
+<html lang="en">
 <head>
-
-    <title>Indoor Mapper CONTROL</title>
+    <meta charset="utf-8">
+    <title>IndoorMapper CONTROL</title>
 
     <script src="lib/d3.v4.min.js"></script>
     <script src="lib/topojson.v1.min.js"></script>
     <script src="js/control.js"></script>
 
     <link href='css/styles.css' rel='stylesheet' type='text/css'/>
-    <style>
-    </style>
 
 </head>
+<body id="mainWindow" onload="init()" onresize="resizeWindow()">
 
-<body id="mainWindow" onload="init()" onresize="fitToBox(floordata)">
-
-<div id="mainMapDiv"></div>
+<div id="mapDiv"></div>
+<div id="zoomDiv">
+    <input class="zoombutton" type="button" value="+" onclick="doZoom(10)"/>
+    <input class="zoombutton" type="button" value="-"  onclick="doZoom(-10)"/>
+    <input class="zoombutton" id="floor0" type="button" value="0"  onclick="changeFloor(0)"/>
+    <input class="zoombutton" id="floor1" type="button" value="1"  onclick="changeFloor(1)"/>
+    <input class="zoombutton" id="floor2" type="button" value="2"  onclick="changeFloor(2)"/>
+    <input class="zoombutton" id="floor3" type="button" value="3"  onclick="changeFloor(3)"/>
 </div>
 
+
 </body>
+</html>

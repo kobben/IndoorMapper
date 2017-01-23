@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<!--<meta http-equiv="refresh" content="5">-->
+<html lang="en">
 <head>
-
+    <meta charset="UTF-8">
     <title>Indoor Mapper VIEW</title>
 
     <script src="lib/d3.v4.min.js"></script>
@@ -10,14 +9,16 @@
     <script src="js/view.js"></script>
 
     <link href='css/styles.css' rel='stylesheet' type='text/css'/>
-    <style>
-    </style>
-
 </head>
+<body id="mainWindow" onload="init()" onresize="resizeWindow()">
 
-<body id="mainWindow" onload="init()" onresize="fitToBox(floordata)">
-
-<div id="mainMapDiv"></div>
+<div id="mapDiv"></div>
+<div id="zoomDiv">
+    <a href="./img/legend.png" target="_blank"><input class="zoombutton" type="button" value="?"/></a>
+    <input class="zoombutton" id="zoomIn" type="button" value="+" onclick="doZoom(20)"/>
+    <input class="zoombutton" id="zoomOut" type="button" value="-"  onclick="doZoom(-20)"/>
+    <input class="zoombutton" id="floorNr" type="button" value="x"  />
 </div>
 
 </body>
+</html>
